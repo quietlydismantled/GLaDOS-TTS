@@ -1,0 +1,11 @@
+services:
+  glados-tts:
+    build: .
+    image: glados-tts
+    container_name: glados-tts
+    ports:
+      - "8000:8000"
+    environment:
+      # The longest text accepted in a single request.
+      GLADOS_MAX_TEXT_LENGTH: 1000
+    restart: unless-stopped

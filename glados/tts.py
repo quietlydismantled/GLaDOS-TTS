@@ -7,7 +7,6 @@ from typing import Any, Dict, List, Mapping, Optional, Sequence
 import numpy as np
 import onnxruntime as ort
 
-import sounddevice as sd
 import wave
 
 import re
@@ -32,6 +31,26 @@ USE_CUDA = True
 PAD = "_"  # padding (0)
 BOS = "^"  # beginning of sentence
 EOS = "$"  # end of sentence
+
+
+def _sounddevice():
+    """Import sounddevice on demand.
+
+    It is only needed for local audio playback, and importing it requires the
+    PortAudio native library. Deferring the import lets the module be used for
+    audio generation alone (such as in a server or a container) on machines
+    that have no sound support installed.
+    """
+    try:
+        import sounddevice
+    except OSError as e:
+        raise RuntimeError(
+            "Audio playback is unavailable because PortAudio could not be loaded. "
+            "Generating and saving audio still works. "
+            f"Original error: {e}"
+        ) from e
+
+    return sounddevice
 
 
 @dataclass
@@ -181,16 +200,21 @@ class Synthesizer:
         self.play_audio(audio)
     
     def play_audio_async(self, audio: np.ndarray):
-        sd.play(audio, self.rate)
-    
+        _sounddevice().play(audio, self.rate)
+
     def play_audio(self, audio: np.ndarray):
         self.play_audio_async(audio)
-        sd.wait()
-    
+        _sounddevice().wait()
+
     def stop_audio(self):
-        sd.stop()
-    
-    def save_wav(self, audio: np.ndarray, filename: str):
+        _sounddevice().stop()
+
+    def save_wav(self, audio: np.ndarray, filename):
+        """Save audio as a wave file.
+
+        `filename` may be a path or an already open binary file object, which
+        makes it possible to write a wave file straight into memory.
+        """
         with wave.open(filename, "wb") as f:
             nchannels = 1 if audio.ndim == 1 else audio.shape[1]
             sampwidth = 2

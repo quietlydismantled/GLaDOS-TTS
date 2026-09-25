@@ -42,6 +42,61 @@ If you just want to quickly make some GLaDOS TTS speech and don't really care ab
    - Mac: `download_models_mac.command`
 4. Run the interactive console demo with `conda run -n glados python speak_console.py`
 
+## Docker (Web Service)
+You can run the engine as a small HTTP service instead of installing it locally. The image is CPU-only and downloads the models during the build, so no separate download step is needed.
+
+1. Build and start the service with `docker compose up --build`
+2. Open <http://localhost:8000> to try it from your browser
+
+The service loads the models once at startup, which takes a little while. Until that finishes, `/health` reports `loading` and requests to `/speak` return a `503`.
+
+### Endpoints
+| Method | Path      | Description                                    |
+|--------|-----------|------------------------------------------------|
+| `GET`  | `/`       | A small page for trying the service            |
+| `GET`  | `/health` | Reports `ok` once the models have loaded       |
+| `POST` | `/speak`  | Generates a `.wav` file from a JSON body       |
+| `GET`  | `/speak`  | Generates a `.wav` file from query parameters  |
+| `GET`  | `/docs`   | Interactive API documentation                  |
+
+Both `/speak` endpoints take the text to speak and an optional `normalize` flag, which expands numbers and symbols into words before speaking (it is on by default). They respond with `audio/wav`.
+
+On Linux, macOS, or Git Bash:
+
+```bash
+curl -X POST http://localhost:8000/speak \
+    -H "Content-Type: application/json" \
+    -d '{"text": "Hello, and thank you, world."}' \
+    --output hello.wav
+```
+
+On Windows, PowerShell parses quotes differently, so the same command has to be written one of these ways:
+
+```powershell
+Invoke-WebRequest -Uri http://localhost:8000/speak -Method Post -ContentType application/json -Body '{"text": "Hello, and thank you, world."}' -OutFile hello.wav
+```
+
+```powershell
+curl.exe -X POST http://localhost:8000/speak -H "Content-Type: application/json" -d '{\"text\": \"Hello, and thank you, world.\"}' --output hello.wav
+```
+
+The `GET` endpoint avoids quoting trouble entirely, since the text is URL encoded:
+
+```bash
+curl "http://localhost:8000/speak?text=Hello%2C%20and%20thank%20you%2C%20world." --output hello.wav
+```
+
+
+Requests longer than 1000 characters are rejected. Change that limit with the `GLADOS_MAX_TEXT_LENGTH` environment variable.
+
+### Running Without Docker
+```bash
+pip install -r requirements_server.txt
+uvicorn server:app --host 0.0.0.0 --port 8000
+```
+
+Note that the container has no sound card, so it never plays audio aloud. Audio generation does not need one, and `sounddevice` is only imported when the playback methods are actually called.
+
 # Usage
 
 ## From An Interactive GUI

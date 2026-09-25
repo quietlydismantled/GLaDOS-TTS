@@ -1,0 +1,25 @@
+# The ONNX models are downloaded during the build, not copied from the host.
+*.onnx
+
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+
+.git/
+.gitignore
+.gitattributes
+
+# Desktop installers, build scripts and artwork are not used by the service.
+build/
+dist/
+*.spec
+resources/
+install_*.bat
+install_*.command
+build_*.bat
+run_*.bat
+download_models_*
+
+*.wav
