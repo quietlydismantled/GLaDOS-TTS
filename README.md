@@ -20,28 +20,53 @@ Find more usage options [here](#Usage)!
 If you just want to quickly make some GLaDOS TTS speech and don't really care about writing custom code, simply download the latest portable builds [here](https://github.com/nimaid/GLaDOS-TTS/releases/latest). All you have to do is download and run your preferred `.exe` file!
 
 ### Full Installation (CPU only or CUDA accelerated)
-1. Install with `install_windows.bat`. This should automatically:
-   1. Install Miniconda if you don't already have `pip` or a `conda` binary
-   2. Install the virtual environment (with CUDA and CuDNN if you want!)
-   3. Download the required model files if not already present
+1. Install with `install_windows.bat`. This will automatically:
+   1. Ask whether you want the CPU-only or the CUDA accelerated environment
+   2. Install Miniconda to `%USERPROFILE%\Miniconda3` if you don't already have `conda` (no administrator password needed)
+   3. Create the `glados` Conda environment (with CUDA and CuDNN if you chose that!)
+   4. Download the required model files if not already present
+   5. Verify that everything imports correctly
 2. Run the interactive console demo with `run_console_windows.bat`
 
-## Linux / Mac
+Pass `/y` to skip the confirmation prompts and install the CPU-only environment.
+
+## Mac
+### Automatic Installation (CPU only)
+1. Install with `install_mac.command`. This will automatically:
+   1. Install Miniconda to `~/miniconda3` if you don't already have `conda` (no administrator password needed)
+   2. Create the `glados` Conda environment
+   3. Download the required model files if not already present
+   4. Verify that everything imports correctly
+2. Run the interactive console demo with `conda run -n glados python speak_console.py`
+
+Pass `--yes` to skip the confirmation prompts. Note that CUDA is not available on macOS, so the CPU-only environment is always used.
+
+### Manual Installation (CPU only)
 1. Install [Miniconda](https://www.anaconda.com/download/success) if you do not have `conda` already installed.
-   - Linux
-      - [64-Bit x86](https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh)
-      - [64-Bit ARM64](https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-aarch64.sh)
-   - Mac
-      - [64-Bit x86 (Intel)](https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.pkg)
-      - [64-Bit ARM64 (Apple)](https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-arm64.pkg)
-2. Install the Conda environment with one of the following commands:
-   - GPU accelerated: `conda env create -f environment_cuda.yaml`
-   - CPU only: `conda env create -f environment.yaml`
-3. Download the required models with one of the following commands:
-   - Linux: `download_models_ubuntu.bash`
-   - Mac: `download_models_mac.command`
+   - [64-Bit x86 (Intel)](https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.pkg)
+   - [64-Bit ARM64 (Apple)](https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-arm64.pkg)
+2. Install the Conda environment with `conda env create -f environment.yml`
+3. Download the required models with `download_models_mac.command`
 4. Run the interactive console demo with `conda run -n glados python speak_console.py`
 
+## Linux
+1. Install [Miniconda](https://www.anaconda.com/download/success) if you do not have `conda` already installed.
+   - [64-Bit x86](https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh)
+   - [64-Bit ARM64](https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-aarch64.sh)
+2. Install the Conda environment with one of the following commands:
+   - GPU accelerated: `conda env create -f environment_cuda.yml`
+   - CPU only: `conda env create -f environment.yml`
+3. Download the required models with `download_models_linux.bash`
+4. Run the interactive console demo with `conda run -n glados python speak_console.py`
+
+### A Note On Conda Channels
+Recent versions of `conda` refuse to use Anaconda's `defaults` channels until you accept [Anaconda's Terms of Service](https://www.anaconda.com/legal/terms/terms-of-service). This project only needs `conda-forge`, so if you hit that error you can avoid the `defaults` channels entirely by prefixing the command:
+
+```bash
+CONDA_DEFAULT_CHANNELS=conda-forge conda env create -f environment.yml
+```
+
+`install_mac.command` and `install_windows.bat` already do this for you.
 ## Docker (Web Service)
 You can run the engine as a small HTTP service instead of installing it locally. The image is CPU-only and downloads the models during the build, so no separate download step is needed.
 
